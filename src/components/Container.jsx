@@ -3,6 +3,7 @@ import { Header } from "./Header";
 import { SingleTask } from "./SingleTask";
 import { Input } from "./Input";
 import { AddButton } from "./AddButton";
+import { getNumberOfTasks } from "../utils/getNumberOfTasks";
 
 const currentTasks = [
   { text: "Zapłacić rachunki", id: 1, done: true },
@@ -11,29 +12,32 @@ const currentTasks = [
   { text: "ktest3", id: 4, done: true },
 ];
 
-const getNumberOfTasks = (numberOfTasks) => {
-  switch (true) {
-    case numberOfTasks > 4:
-      return `${numberOfTasks} zadań`;
-    case numberOfTasks > 1:
-      return `${numberOfTasks} zadania`;
-    case numberOfTasks === 1:
-      return `${numberOfTasks} zadanie`;
-    case numberOfTasks === 0:
-    default:
-      return "brak Zadań";
-  }
-};
-
 export const Container = () => {
   const [tasksList, setTasksList] = useState(currentTasks);
   const [inputValue, setInputValue] = useState("");
   const [isButtonShown, setIsButtonShown] = useState(true);
+  const [isPlaceholderShown, setIsPlaceholderShown] = useState(false);
+
+  const editTaskText = (taskId, newText) => {
+    setTasksList((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              text: newText,
+            }
+          : task,
+      ),
+    );
+  };
 
   const handleAddNewTask = () => {
     const newTaskText = inputValue;
+    setIsPlaceholderShown(false);
 
-    if (newTaskText !== "") {
+    if (newTaskText == "") {
+      setIsPlaceholderShown(true);
+    } else {
       setTasksList((prevTask) => [
         ...prevTask,
         { text: newTaskText, id: Date.now(), done: false },
@@ -68,6 +72,9 @@ export const Container = () => {
         ""
       ) : (
         <Input
+          border={isPlaceholderShown ? "border-red-500" : "border-black"}
+          outline={isPlaceholderShown ? "outline-red-500" : "outline-black"}
+          placeholder={isPlaceholderShown ? "Podaj treść taska" : ""}
           updateInputValue={(e) => setInputValue(e.target.value)}
           inputValue={inputValue}
           handleAddNewTask={handleAddNewTask}
@@ -82,6 +89,7 @@ export const Container = () => {
             done={task.done}
             setAsCompleted={setAsCompleted}
             removeTask={removeTask}
+            editTaskText={editTaskText}
           />
         ))}
       </ul>
